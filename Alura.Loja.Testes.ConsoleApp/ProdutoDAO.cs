@@ -4,7 +4,7 @@ using System.Data.SqlClient;
 
 namespace Alura.Loja.Testes.ConsoleApp
 {
-    internal class ProdutoDAO : IDisposable
+    internal class ProdutoDAO : IDisposable, IProdutoDAO
     {
         private SqlConnection conexao;
 
@@ -19,7 +19,7 @@ namespace Alura.Loja.Testes.ConsoleApp
             this.conexao.Close();
         }
 
-        internal void Adicionar(Produto p)
+        public void Adicionar(Produto p)
         {
             try
             {
@@ -42,7 +42,7 @@ namespace Alura.Loja.Testes.ConsoleApp
             }
         }
 
-        internal void Atualizar(Produto p)
+        public void Atualizar(Produto p)
         {
             try
             {
@@ -66,7 +66,7 @@ namespace Alura.Loja.Testes.ConsoleApp
             }
         }
 
-        internal void Remover(Produto p)
+        public void Remover(Produto p)
         {
             try
             {
@@ -84,7 +84,7 @@ namespace Alura.Loja.Testes.ConsoleApp
             }
         }
 
-        internal IList<Produto> Produtos()
+        public IList<Produto> Produtos()
         {
             var lista = new List<Produto>();
 

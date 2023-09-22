@@ -1,4 +1,7 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Remoting.Contexts;
@@ -11,81 +14,47 @@ namespace Alura.Loja.Testes.ConsoleApp
     {
         static void Main(string[] args)
         {
-            //GravarUsandoAdoNet();
-            //GravarUsandoEntity();
-            //RecuperarProdutos();
-            //ExcluirProdutos();
-            //RecuperarProdutos();
-            AtualizarProduto();
-        }
-
-        private static void AtualizarProduto()
-        {
-            GravarUsandoEntity();
-            RecuperarProdutos();
-
-            using (var repo = new LojaContext())
-            {
-                Produto primeiro = repo.Produtos.First();
-                primeiro.Nome = "Harry Potter e o Prisioneiro de Askaban";
-                repo.Produtos.Update(primeiro);
-                repo.SaveChanges();
-            }
-            RecuperarProdutos();
-        }
-
-        private static void ExcluirProdutos()
-        {//excluir todos os produtos da minha tabela de produtos
-            using (var repo = new LojaContext())
-            {
-                IList<Produto> produtos = repo.Produtos.ToList();
-                foreach(Produto item in produtos)
-                {
-                    repo.Produtos.Remove(item);
-                }
-
-                repo.SaveChanges();
-            }
-        }
-
-        private static void RecuperarProdutos()
-        {// para varrer o banco de dados e transformar em lista.
-            using(var repo = new LojaContext())
-            {
-                IList<Produto> produtos = repo.Produtos.ToList();
-                Console.WriteLine("Foram encontrados {0} produto(s).", produtos.Count);
-                foreach (var item in produtos)
-                {
-                    Console.WriteLine(item.Nome);
-                }
-            }
-        }
-
-        private static void GravarUsandoEntity()
-        {   //para gravar no banco de dados 
-            Produto p = new Produto();
-            p.Nome = "Harry Potter e a Ordem da Fênix";
-            p.Categoria = "Livros";
-            p.Preco = 19.89;
-
             using (var contexto = new LojaContext())
             {
-                contexto.Produtos.Add(p);
+                var serviceProvider = contexto.GetInfrastructure<IServiceProvider>();
+                var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
+                loggerFactory.AddProvider(SqlLoggerProvider.Create());
+
+
+                var produtos = contexto.Produtos.ToList();
+                foreach(var produto in produtos)
+                {
+                    Console.WriteLine(produto);
+                }
+                Console.WriteLine("================");
+                foreach (var e in contexto.ChangeTracker.Entries())
+                {
+                    Console.WriteLine(e.State);
+                }
+
+                //var p1 = produtos.First();
+                //p1.Nome = "007";
+                var novoProduto = new Produto()
+                {
+                    Nome = "Desinfetante",
+                    Categoria = "Limpeza",
+                    Preco = 2.99
+                };
+                contexto.Produtos.Add(novoProduto);
+
+            Console.WriteLine("================");
+                foreach (var e in contexto.ChangeTracker.Entries())
+                {
+                    Console.WriteLine(e.Entity.ToString() + " - ", e.State) ;
+                }
                 contexto.SaveChanges();
 
-            }
-        }
 
-        private static void GravarUsandoAdoNet()
-        {
-            Produto p = new Produto();
-            p.Nome = "Harry Potter e a Ordem da Fênix";
-            p.Categoria = "Livros";
-            p.Preco = 19.89;
-
-            using (var repo = new ProdutoDAO())
-            {
-                repo.Adicionar(p);
+                //var produtos1 = contexto.Produtos.ToList();
+                //foreach (var produto in produtos)
+                //{
+                //    Console.WriteLine(produto);
+                //}
             }
         }
     }
