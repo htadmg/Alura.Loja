@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore.Infrastructure;
+﻿using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;
@@ -20,41 +21,34 @@ namespace Alura.Loja.Testes.ConsoleApp
                 var loggerFactory = serviceProvider.GetService<ILoggerFactory>();
                 loggerFactory.AddProvider(SqlLoggerProvider.Create());
 
-
                 var produtos = contexto.Produtos.ToList();
-                foreach(var produto in produtos)
-                {
-                    Console.WriteLine(produto);
-                }
-                Console.WriteLine("================");
-                foreach (var e in contexto.ChangeTracker.Entries())
-                {
-                    Console.WriteLine(e.State);
-                }
+                ExibeEntries(contexto.ChangeTracker.Entries());
 
-                //var p1 = produtos.First();
-                //p1.Nome = "007";
                 var novoProduto = new Produto()
                 {
-                    Nome = "Desinfetante",
+                    Nome = "Sabão em pó",
                     Categoria = "Limpeza",
-                    Preco = 2.99
+                    Preco = 5.99
                 };
                 contexto.Produtos.Add(novoProduto);
+                ExibeEntries(contexto.ChangeTracker.Entries());
+                contexto.Produtos.Remove(novoProduto);
+                ExibeEntries(contexto.ChangeTracker.Entries());
 
+                //contexto.SaveChanges();
+                var entry = contexto.Entry(novoProduto);
+                Console.WriteLine(entry.Entity.ToString() + "-" + entry.State);
+                ExibeEntries(contexto.ChangeTracker.Entries());
+
+            }
+        }
+
+        private static void ExibeEntries(IEnumerable<EntityEntry> entries)
+        {
             Console.WriteLine("================");
-                foreach (var e in contexto.ChangeTracker.Entries())
-                {
-                    Console.WriteLine(e.Entity.ToString() + " - ", e.State) ;
-                }
-                contexto.SaveChanges();
-
-
-                //var produtos1 = contexto.Produtos.ToList();
-                //foreach (var produto in produtos)
-                //{
-                //    Console.WriteLine(produto);
-                //}
+            foreach (var e in entries)
+            {
+                Console.WriteLine(e.Entity.ToString() + " - ", e.State);
             }
         }
     }
